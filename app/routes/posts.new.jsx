@@ -1,6 +1,17 @@
-import { Link, useRouteError } from "@remix-run/react"
+import { Link, useRouteError, useActionData, json } from "@remix-run/react"
 import { redirect } from "@remix-run/node"
 import { db } from "../utils/db.server"
+
+function validateTitle(title) {
+  if(typeof title !== 'string' || title.length < 3) {
+    return 'Title should be at least 3 characters long'
+  }
+}
+function validateBody(body) {
+  if(typeof body !== 'string' || body.length < 10) {
+    return 'Body should be at least 10 characters long'
+  }
+}
 
 export const action = async ({request}) => {
   const form = await request.formData()
@@ -9,12 +20,24 @@ export const action = async ({request}) => {
 
   const fields = {title, body}
 
+  const fieldErrors = {
+    title: validateTitle(title),
+    body: validateBody(body)
+  }
+
+  if (Object.values(fieldErrors).some(Boolean)) {
+    console.log(fieldErrors)
+    return json({fieldErrors, fields}, { stats: 400 })
+  }
+
   const post = await db.post.create({data: fields})
 
   return redirect(`/posts/${post.id}`)
 }
 
 function NewPost() {
+  const actionData = useActionData()
+
   return (
     <>
       <div className="page-header">
