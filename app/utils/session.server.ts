@@ -20,6 +20,17 @@ export async function login({username, password} : any) {
     return user
 }
 
+// Register new user
+export async function register({username, password} : any) {
+    const passwordHash = await bcrypt.hash(password, 10)
+    return db.user.create({
+        data: {
+            username,
+            passwordHash
+        }
+    })
+}
+
 // Get session secret
 const sessionSecret = process.env.SESSION_SECRET
 if(!sessionSecret) {
@@ -74,4 +85,15 @@ export async function getUser(request: Request) {
     } catch (error) {
         return null
     }
+}
+
+// Log out user and destroy session
+export async function logout(request: Request) {
+    const session = await storage.getSession(request.headers.get('Cookie'))
+
+    return redirect('/logout', {
+        headers: {
+            'Set-Cookie': await storage.destroySession(session)
+        }
+    })
 }

@@ -1,6 +1,7 @@
 import { Outlet, LiveReload, Link, Links, Meta, useRouteError, isRouteErrorResponse, useLoaderData} from '@remix-run/react'
 import globalStylesUrl from './styles/global.css'
 import { getUser } from './utils/session.server'
+import { json } from '@remix-run/node'
 
 export const links = () => [{rel: 'stylesheet', href:
 globalStylesUrl }]
@@ -18,12 +19,12 @@ export const meta = () => {
 
 }
 
-export const loader = async ({request}: any) => {
+export const loader = async ({request} : any) => {
   const user = await getUser(request)
   const data = {
     user
   }
-  return data
+  return json(data)
 }
 
 export default function App() {
